@@ -11,8 +11,6 @@
     <!-- Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- DYNAMIC ICONS will be injected by JavaScript at the bottom -->
-
     <style>
         /* --- Dark Glass Theme --- */
         :root {
@@ -30,7 +28,7 @@
             width: 100vw;
         }
 
-        /* Dark Wallpaper */
+        /* Wallpaper */
         .wallpaper {
             position: fixed; inset: 0; z-index: -1;
             background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2544') center/cover;
@@ -61,7 +59,7 @@
             background: rgba(0, 0, 0, 0.6);
         }
 
-        /* Dial Pad Button */
+        /* Dial Pad */
         .dial-btn {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 50%;
@@ -85,7 +83,7 @@
 
         /* Bottom Nav */
         .bottom-nav {
-            background: rgba(10, 10, 10, 0.9);
+            background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid rgba(255,255,255,0.05);
@@ -94,7 +92,7 @@
         .nav-item.active { color: var(--accent); }
         
         /* Animations */
-        .fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
         
         .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -109,16 +107,20 @@
     <div id="view-login" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
         <div class="flex flex-col items-center w-full max-w-[300px]">
             <div class="mb-8 flex flex-col items-center">
-                <!-- App Logo in Login -->
-                <i class="ph ph-shield-check text-4xl text-blue-500 mb-2"></i>
-                <h1 class="text-xl font-bold tracking-wide">Liumi OS</h1>
+                <!-- SECURITY SHIELD ICON -->
+                <div class="w-20 h-20 rounded-2xl bg-blue-600/20 flex items-center justify-center mb-4 border border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                    <i class="ph-fill ph-shield-check text-5xl text-blue-500"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-wide text-white">Liumi OS</h1>
                 <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">System Locked</p>
             </div>
 
+            <!-- Passcode Dots -->
             <input type="password" id="passcode-display" readonly 
-                   class="bg-transparent text-center text-4xl tracking-[0.5em] text-white w-full mb-8 outline-none border-none h-12" 
-                   value="">
+                   class="bg-transparent text-center text-4xl tracking-[0.5em] text-white w-full mb-8 outline-none border-none h-12 placeholder-gray-800" 
+                   placeholder="••••" value="">
 
+            <!-- Keypad -->
             <div class="grid grid-cols-3 gap-6">
                 <div class="dial-btn" onclick="typePin('1')">1</div>
                 <div class="dial-btn" onclick="typePin('2')">2</div>
@@ -135,30 +137,33 @@
                     <i class="ph ph-arrow-right text-2xl"></i>
                 </div>
             </div>
+            <p class="text-gray-800 text-[10px] mt-8">SECURE ENCLAVE • v3.1</p>
         </div>
     </div>
 
-    <!-- 📱 APP CONTAINER -->
+    <!-- 📱 APP DASHBOARD -->
     <div id="view-app" class="fixed inset-0 hidden flex-col">
         
-        <header class="pt-12 pb-4 px-6 flex justify-between items-end shrink-0">
+        <header class="pt-12 pb-4 px-6 flex justify-between items-end shrink-0 bg-gradient-to-b from-black/80 to-transparent">
             <div>
                 <p class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1" id="current-date">SYSTEM READY</p>
                 <h1 class="text-2xl font-bold text-white" id="page-title">Dashboard</h1>
             </div>
-            <!-- Header Logo -->
-            <img id="header-logo" src="" class="w-10 h-10 rounded-xl shadow-lg border border-white/20">
+            <!-- USER LOGO (Header) -->
+            <img id="header-logo" src="" class="w-11 h-11 rounded-xl shadow-lg border border-white/20 object-cover">
         </header>
 
         <main class="flex-1 relative overflow-hidden">
             
             <!-- 🏠 HOME -->
             <section id="tab-home" class="scroll-area px-5 pt-2 fade-in">
+                <!-- Search -->
                 <div class="glass rounded-xl p-3 flex items-center gap-3 mb-6">
                     <i class="ph ph-magnifying-glass text-lg text-gray-500"></i>
                     <input type="text" id="g-search" placeholder="Search web..." class="bg-transparent w-full outline-none text-sm text-white placeholder-gray-600" onkeydown="if(event.key==='Enter') googleSearch()">
                 </div>
 
+                <!-- Stats Grid -->
                 <div class="grid grid-cols-2 gap-3 mb-3">
                     <div class="glass p-5 rounded-2xl col-span-2 relative overflow-hidden border-l-4 border-l-blue-500">
                         <div class="absolute right-0 top-0 p-4 opacity-10"><i class="ph ph-cloud-arrow-up text-6xl"></i></div>
@@ -240,7 +245,7 @@
 
             <!-- 🤖 AI -->
             <section id="tab-ai" class="scroll-area px-0 pt-0 hidden flex flex-col h-full">
-                <div class="px-5 py-2 border-b border-white/5 flex justify-between">
+                <div class="px-5 py-2 border-b border-white/5 flex justify-between bg-black/40 backdrop-blur-md">
                     <span class="text-[10px] text-gray-500 font-mono flex items-center gap-1">
                         <i class="ph ph-robot"></i> <span id="current-model-display">LIUMI AI</span>
                     </span>
@@ -282,26 +287,25 @@
 
     <script>
         // ============================================
-        // 🎨 CUSTOMIZE YOUR LOGO HERE
+        // 🎨 LOGO CONFIGURATION
         // ============================================
-        
-        // PASTE YOUR IMAGE URL HERE (Must be https://...)
-        // This is a default 'L' logo. Change it to your brand logo.
         const LOGO_URL = "https://i.ibb.co/WWn4yXvT/gyuj.jpg";
-
         // ============================================
 
-        // --- APP LOGIC ---
         const PIN = "8586";
         const SALT = "liumi-pro-salt";
         
-        // 1. INJECT LOGO & MANIFEST AUTOMATICALLY
+        let db = { cloud: [], vms: [], accounts: [], apis: [], aiKey: "", aiModel: "mistralai/mixtral-8x7b-instruct" };
+        let cryptoKey = null;
+        let currentVaultTab = 'accounts';
+        let activeModalType = '';
+
+        // 1. IDENTITY INJECTION (Immediately runs)
         (function setupIdentity() {
-            // Apply to internal UI
-            document.getElementById('login-logo').src = LOGO_URL;
+            // Internal Images
             document.getElementById('header-logo').src = LOGO_URL;
 
-            // Create Icons for iOS/Browser
+            // Icons & Manifest
             const linkIcon = document.createElement('link');
             linkIcon.rel = 'icon'; linkIcon.href = LOGO_URL;
             document.head.appendChild(linkIcon);
@@ -310,9 +314,9 @@
             linkApple.rel = 'apple-touch-icon'; linkApple.href = LOGO_URL;
             document.head.appendChild(linkApple);
 
-            // Create Manifest Blob for Android PWA
+            // Manifest Blob
             const manifest = {
-                name: "Liumi Pro",
+                name: "Liumi OS",
                 short_name: "Liumi",
                 start_url: ".",
                 display: "standalone",
@@ -323,29 +327,21 @@
                     { src: LOGO_URL, sizes: "512x512", type: "image/png" }
                 ]
             };
-            const stringManifest = JSON.stringify(manifest);
-            const blob = new Blob([stringManifest], {type: 'application/json'});
-            const manifestURL = URL.createObjectURL(blob);
+            const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
             const linkManifest = document.createElement('link');
             linkManifest.rel = 'manifest';
-            linkManifest.href = manifestURL;
+            linkManifest.href = URL.createObjectURL(blob);
             document.head.appendChild(linkManifest);
         })();
 
-
-        let db = { cloud: [], vms: [], accounts: [], apis: [], aiKey: "", aiModel: "mistralai/mixtral-8x7b-instruct" };
-        let cryptoKey = null;
-        let currentVaultTab = 'accounts';
-        let activeModalType = '';
-
-        // --- 🔒 AUTO-LOCK & SECURITY ---
+        // --- SECURITY LOGIC ---
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') performLock();
         });
 
         function performLock() {
-            cryptoKey = null;
-            db = { cloud: [], vms: [], accounts: [], apis: [], aiKey: "", aiModel: "" };
+            cryptoKey = null; // Clear Key
+            db = { cloud: [], vms: [], accounts: [], apis: [], aiKey: "", aiModel: "" }; // Clear Memory
             document.getElementById('view-app').style.display = 'none';
             document.getElementById('view-login').style.display = 'flex';
             document.getElementById('passcode-display').value = ''; 
@@ -367,31 +363,48 @@
         }
 
         async function initApp() {
-            const enc = new TextEncoder();
-            const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(PIN), {name:"PBKDF2"}, false, ["deriveKey"]);
-            cryptoKey = await crypto.subtle.deriveKey(
-                {name: "PBKDF2", salt: enc.encode(SALT), iterations: 100000, hash: "SHA-256"},
-                keyMaterial, {name: "AES-GCM", length: 256}, false, ["encrypt", "decrypt"]
-            );
-
-            const raw = localStorage.getItem('liumi_pro_db');
-            if(raw) {
-                try {
-                    const data = atob(raw);
-                    const buf = new Uint8Array(data.length);
-                    for(let i=0; i<data.length; i++) buf[i] = data.charCodeAt(i);
-                    const iv = buf.slice(0, 12);
-                    const cipher = buf.slice(12);
-                    const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv}, cryptoKey, cipher);
-                    const loaded = JSON.parse(new TextDecoder().decode(dec));
-                    db = { ...db, ...loaded };
-                } catch(e) { console.error("Crypto Error", e); }
+            // Check for HTTPS (Crypto API Requirement)
+            if(!window.crypto.subtle && window.location.protocol !== 'file:') {
+                alert("Security Error: This app requires HTTPS to run encryption.");
+                return;
             }
 
-            document.getElementById('view-login').style.display = 'none';
-            document.getElementById('view-app').style.display = 'flex';
-            updateStats();
-            renderLists();
+            try {
+                const enc = new TextEncoder();
+                const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(PIN), {name:"PBKDF2"}, false, ["deriveKey"]);
+                cryptoKey = await crypto.subtle.deriveKey(
+                    {name: "PBKDF2", salt: enc.encode(SALT), iterations: 100000, hash: "SHA-256"},
+                    keyMaterial, {name: "AES-GCM", length: 256}, false, ["encrypt", "decrypt"]
+                );
+
+                const raw = localStorage.getItem('liumi_pro_db');
+                if(raw) {
+                    try {
+                        const data = atob(raw);
+                        const buf = new Uint8Array(data.length);
+                        for(let i=0; i<data.length; i++) buf[i] = data.charCodeAt(i);
+                        const iv = buf.slice(0, 12);
+                        const cipher = buf.slice(12);
+                        const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv}, cryptoKey, cipher);
+                        const loaded = JSON.parse(new TextDecoder().decode(dec));
+                        db = { ...db, ...loaded };
+                    } catch(e) { console.error("Decryption failed or empty", e); }
+                }
+
+                // SUCCESS: Switch View
+                document.getElementById('view-login').style.display = 'none';
+                document.getElementById('view-app').style.display = 'flex';
+                updateStats();
+                renderLists();
+                
+                // Set Header Date
+                const d = new Date();
+                document.getElementById('current-date').innerText = d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'}).toUpperCase();
+
+            } catch(e) {
+                alert("Login Error: " + e.message);
+                console.error(e);
+            }
         }
 
         async function persist() {
@@ -406,6 +419,7 @@
             renderLists();
         }
 
+        // --- UI LOGIC ---
         function updateStats() {
             document.getElementById('stat-cloud').innerText = db.cloud.reduce((sum, item) => sum + (parseFloat(item.gb) || 0), 0);
             document.getElementById('stat-accounts-count').innerText = db.accounts.length;
@@ -550,7 +564,6 @@
             box.innerHTML += `<div class="flex justify-end"><div class="bg-blue-600 text-white text-sm p-3 rounded-2xl rounded-tr-none max-w-[85%]">${txt}</div></div>`;
             input.value = '';
             
-            // SYSTEM PROMPT FOR BRANDING
             const systemPrompt = "You are Liumi AI, an advanced, secure, and professional assistant developed by Liumi Corporation. You are concise, helpful, and prioritize user data privacy. Address the user with respect and maintain a sleek, high-tech persona.";
 
             try {
