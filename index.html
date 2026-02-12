@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <title>Liumi OS</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- DYNAMIC ICONS will be injected by JavaScript at the bottom -->
+
+    <style>
+        /* --- Dark Glass Theme --- */
+        :root {
+            --glass-bg: rgba(20, 20, 22, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent: #3b82f6;
+        }
+
+        body {
+            background-color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            color: #e2e8f0;
+            overflow: hidden;
+            height: 100dvh;
+            width: 100vw;
+        }
+
+        /* Dark Wallpaper */
+        .wallpaper {
+            position: fixed; inset: 0; z-index: -1;
+            background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2544') center/cover;
+        }
+        .wallpaper::after {
+            content: ''; position: absolute; inset: 0;
+            background: #000000; opacity: 0.7; 
+        }
+
+        /* Glass Components */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+            transition: 0.2s;
+        }
+        .glass-input:focus {
+            border-color: var(--accent);
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        /* Dial Pad Button */
+        .dial-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            height: 70px; width: 70px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 500;
+            transition: background 0.1s;
+            user-select: none;
+            cursor: pointer;
+        }
+        .dial-btn:active { background: rgba(255, 255, 255, 0.2); }
+
+        /* Scroll Area */
+        .scroll-area {
+            height: 100%;
+            overflow-y: auto;
+            padding-bottom: 110px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .scroll-area::-webkit-scrollbar { display: none; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item.active { color: var(--accent); }
+        
+        /* Animations */
+        .fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        
+        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="wallpaper"></div>
+
+    <!-- 🔒 LOGIN SCREEN -->
+    <div id="view-login" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
+        <div class="flex flex-col items-center w-full max-w-[300px]">
+            <div class="mb-8 flex flex-col items-center">
+                <!-- App Logo in Login -->
+                <i class="ph ph-shield-check text-4xl text-blue-500 mb-2"></i>
+                <h1 class="text-xl font-bold tracking-wide">Liumi OS</h1>
+                <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">System Locked</p>
+            </div>
+
+            <input type="password" id="passcode-display" readonly 
+                   class="bg-transparent text-center text-4xl tracking-[0.5em] text-white w-full mb-8 outline-none border-none h-12" 
+                   value="">
+
+            <div class="grid grid-cols-3 gap-6">
+                <div class="dial-btn" onclick="typePin('1')">1</div>
+                <div class="dial-btn" onclick="typePin('2')">2</div>
+                <div class="dial-btn" onclick="typePin('3')">3</div>
+                <div class="dial-btn" onclick="typePin('4')">4</div>
+                <div class="dial-btn" onclick="typePin('5')">5</div>
+                <div class="dial-btn" onclick="typePin('6')">6</div>
+                <div class="dial-btn" onclick="typePin('7')">7</div>
+                <div class="dial-btn" onclick="typePin('8')">8</div>
+                <div class="dial-btn" onclick="typePin('9')">9</div>
+                <div class="dial-btn text-red-400 text-sm font-bold" onclick="typePin('clear')">CLR</div>
+                <div class="dial-btn" onclick="typePin('0')">0</div>
+                <div class="dial-btn text-blue-500" onclick="unlock()">
+                    <i class="ph ph-arrow-right text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📱 APP CONTAINER -->
+    <div id="view-app" class="fixed inset-0 hidden flex-col">
+        
+        <header class="pt-12 pb-4 px-6 flex justify-between items-end shrink-0">
+            <div>
+                <p class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1" id="current-date">SYSTEM READY</p>
+                <h1 class="text-2xl font-bold text-white" id="page-title">Dashboard</h1>
+            </div>
+            <!-- Header Logo -->
+            <img id="header-logo" src="" class="w-10 h-10 rounded-xl shadow-lg border border-white/20">
+        </header>
+
+        <main class="flex-1 relative overflow-hidden">
+            
+            <!-- 🏠 HOME -->
+            <section id="tab-home" class="scroll-area px-5 pt-2 fade-in">
+                <div class="glass rounded-xl p-3 flex items-center gap-3 mb-6">
+                    <i class="ph ph-magnifying-glass text-lg text-gray-500"></i>
+                    <input type="text" id="g-search" placeholder="Search web..." class="bg-transparent w-full outline-none text-sm text-white placeholder-gray-600" onkeydown="if(event.key==='Enter') googleSearch()">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div class="glass p-5 rounded-2xl col-span-2 relative overflow-hidden border-l-4 border-l-blue-500">
+                        <div class="absolute right-0 top-0 p-4 opacity-10"><i class="ph ph-cloud-arrow-up text-6xl"></i></div>
+                        <p class="text-xs text-gray-400 uppercase font-bold mb-1">Total Cloud Storage</p>
+                        <h2 class="text-4xl font-bold text-white"><span id="stat-cloud">0</span> <span class="text-base text-blue-400">GB</span></h2>
+                    </div>
+
+                    <div class="glass p-4 rounded-2xl">
+                        <i class="ph ph-users text-orange-400 text-xl mb-2"></i>
+                        <p class="text-[10px] text-gray-400 uppercase">Accounts</p>
+                        <h3 class="text-xl font-bold" id="stat-accounts-count">0</h3>
+                    </div>
+
+                    <div class="glass p-4 rounded-2xl">
+                        <i class="ph ph-key text-pink-400 text-xl mb-2"></i>
+                        <p class="text-[10px] text-gray-400 uppercase">API Keys</p>
+                        <h3 class="text-xl font-bold" id="stat-apis-count">0</h3>
+                    </div>
+
+                    <div class="glass p-4 rounded-2xl">
+                        <i class="ph ph-hard-drives text-purple-400 text-xl mb-2"></i>
+                        <p class="text-[10px] text-gray-400 uppercase">VM Storage</p>
+                        <h3 class="text-xl font-bold"><span id="stat-vm-storage">0</span> <span class="text-xs text-gray-500">GB</span></h3>
+                    </div>
+
+                    <div class="glass p-4 rounded-2xl">
+                        <i class="ph ph-memory text-green-400 text-xl mb-2"></i>
+                        <p class="text-[10px] text-gray-400 uppercase">RAM</p>
+                        <h3 class="text-xl font-bold"><span id="stat-vm-ram">0</span> <span class="text-xs text-gray-500">GB</span></h3>
+                    </div>
+                    
+                    <div class="glass p-4 rounded-2xl">
+                        <i class="ph ph-cpu text-yellow-400 text-xl mb-2"></i>
+                        <p class="text-[10px] text-gray-400 uppercase">Cores</p>
+                        <h3 class="text-xl font-bold"><span id="stat-vm-cpu">0</span> <span class="text-xs text-gray-500">vCPU</span></h3>
+                    </div>
+
+                     <div class="glass p-4 rounded-2xl">
+                        <i class="ph ph-graphics-card text-red-400 text-xl mb-2"></i>
+                        <p class="text-[10px] text-gray-400 uppercase">GPU</p>
+                        <h3 class="text-xl font-bold"><span id="stat-vm-gpu">0</span> <span class="text-xs text-gray-500">GB</span></h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ☁️ CLOUD -->
+            <section id="tab-cloud" class="scroll-area px-5 pt-2 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Providers</span>
+                    <button onclick="openModal('cloud')" class="text-blue-400 text-sm font-bold">+ Add</button>
+                </div>
+                <div id="list-cloud" class="space-y-3 pb-20"></div>
+                <div id="empty-cloud" class="text-center text-gray-600 mt-10 text-xs hidden">No cloud providers added.</div>
+            </section>
+
+            <!-- 🖥️ VM -->
+            <section id="tab-vm" class="scroll-area px-5 pt-2 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Active Instances</span>
+                    <button onclick="openModal('vm')" class="text-purple-400 text-sm font-bold">+ Deploy</button>
+                </div>
+                <div id="list-vm" class="space-y-3 pb-20"></div>
+                <div id="empty-vm" class="text-center text-gray-600 mt-10 text-xs hidden">No virtual machines added.</div>
+            </section>
+
+            <!-- 🔐 VAULT -->
+            <section id="tab-vault" class="scroll-area px-5 pt-2 hidden">
+                <div class="glass rounded-xl p-1 flex mb-5">
+                    <button onclick="setVaultTab('accounts')" id="btn-accounts" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white/10 text-white transition">Accounts</button>
+                    <button onclick="setVaultTab('apis')" id="btn-apis" class="flex-1 py-2 text-xs font-bold rounded-lg text-gray-500 transition">API Keys</button>
+                </div>
+
+                <div id="list-vault" class="space-y-3 pb-20"></div>
+                
+                <button onclick="openVaultModal()" class="w-full py-4 mt-2 rounded-xl border border-dashed border-white/20 text-gray-400 text-sm hover:border-blue-500 hover:text-blue-500 transition">
+                    + Add New Entry
+                </button>
+            </section>
+
+            <!-- 🤖 AI -->
+            <section id="tab-ai" class="scroll-area px-0 pt-0 hidden flex flex-col h-full">
+                <div class="px-5 py-2 border-b border-white/5 flex justify-between">
+                    <span class="text-[10px] text-gray-500 font-mono flex items-center gap-1">
+                        <i class="ph ph-robot"></i> <span id="current-model-display">LIUMI AI</span>
+                    </span>
+                    <button onclick="openModal('settings')" class="text-blue-400 text-[10px]">CONFIG AI</button>
+                </div>
+                
+                <div id="chat-history" class="flex-1 px-5 pt-4 space-y-4 overflow-y-auto"></div>
+
+                <div class="p-4 glass border-t border-white/10 mt-auto">
+                    <div class="relative">
+                        <input id="ai-input" type="text" placeholder="Ask Liumi..." class="w-full bg-black/40 p-3 pr-10 rounded-xl border border-white/10 text-white text-sm focus:border-blue-500 outline-none" onkeydown="if(event.key==='Enter') sendAI()">
+                        <button onclick="sendAI()" class="absolute right-2 top-2 p-1 text-blue-500"><i class="ph ph-paper-plane-right text-lg"></i></button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 🧭 BOTTOM NAV -->
+        <nav class="bottom-nav fixed bottom-0 w-full flex justify-between px-6 items-center h-[90px] z-40">
+            <button onclick="switchTab('home')" class="nav-item active flex flex-col items-center gap-1 text-gray-500 w-12"><i class="ph ph-squares-four text-2xl"></i><span class="text-[9px]">Home</span></button>
+            <button onclick="switchTab('cloud')" class="nav-item flex flex-col items-center gap-1 text-gray-500 w-12"><i class="ph ph-cloud text-2xl"></i><span class="text-[9px]">Cloud</span></button>
+            <button onclick="switchTab('vm')" class="nav-item flex flex-col items-center gap-1 text-gray-500 w-12"><i class="ph ph-desktop-tower text-2xl"></i><span class="text-[9px]">VMs</span></button>
+            <button onclick="switchTab('vault')" class="nav-item flex flex-col items-center gap-1 text-gray-500 w-12"><i class="ph ph-lock-key text-2xl"></i><span class="text-[9px]">Vault</span></button>
+            <button onclick="switchTab('ai')" class="nav-item flex flex-col items-center gap-1 text-gray-500 w-12"><i class="ph ph-sparkle text-2xl"></i><span class="text-[9px]">AI</span></button>
+        </nav>
+    </div>
+
+    <!-- ➕ MODAL -->
+    <div id="modal-overlay" class="fixed inset-0 z-[60] hidden bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center">
+        <div class="glass w-full sm:w-[400px] rounded-t-3xl sm:rounded-3xl p-6 slide-up border-t border-white/20">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-white" id="modal-title">Title</h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400"><i class="ph ph-x"></i></button>
+            </div>
+            <div id="modal-form" class="space-y-4"></div>
+            <button onclick="saveData()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-95">Save Securely</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 🎨 CUSTOMIZE YOUR LOGO HERE
+        // ============================================
+        
+        // PASTE YOUR IMAGE URL HERE (Must be https://...)
+        // This is a default 'L' logo. Change it to your brand logo.
+        const LOGO_URL = "https://i.ibb.co/WWn4yXvT/gyuj.jpg";
+
+        // ============================================
+
+        // --- APP LOGIC ---
+        const PIN = "8586";
+        const SALT = "liumi-pro-salt";
+        
+        // 1. INJECT LOGO & MANIFEST AUTOMATICALLY
+        (function setupIdentity() {
+            // Apply to internal UI
+            document.getElementById('login-logo').src = LOGO_URL;
+            document.getElementById('header-logo').src = LOGO_URL;
+
+            // Create Icons for iOS/Browser
+            const linkIcon = document.createElement('link');
+            linkIcon.rel = 'icon'; linkIcon.href = LOGO_URL;
+            document.head.appendChild(linkIcon);
+
+            const linkApple = document.createElement('link');
+            linkApple.rel = 'apple-touch-icon'; linkApple.href = LOGO_URL;
+            document.head.appendChild(linkApple);
+
+            // Create Manifest Blob for Android PWA
+            const manifest = {
+                name: "Liumi Pro",
+                short_name: "Liumi",
+                start_url: ".",
+                display: "standalone",
+                background_color: "#000000",
+                theme_color: "#000000",
+                icons: [
+                    { src: LOGO_URL, sizes: "192x192", type: "image/png" },
+                    { src: LOGO_URL, sizes: "512x512", type: "image/png" }
+                ]
+            };
+            const stringManifest = JSON.stringify(manifest);
+            const blob = new Blob([stringManifest], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(blob);
+            const linkManifest = document.createElement('link');
+            linkManifest.rel = 'manifest';
+            linkManifest.href = manifestURL;
+            document.head.appendChild(linkManifest);
+        })();
+
+
+        let db = { cloud: [], vms: [], accounts: [], apis: [], aiKey: "", aiModel: "mistralai/mixtral-8x7b-instruct" };
+        let cryptoKey = null;
+        let currentVaultTab = 'accounts';
+        let activeModalType = '';
+
+        // --- 🔒 AUTO-LOCK & SECURITY ---
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') performLock();
+        });
+
+        function performLock() {
+            cryptoKey = null;
+            db = { cloud: [], vms: [], accounts: [], apis: [], aiKey: "", aiModel: "" };
+            document.getElementById('view-app').style.display = 'none';
+            document.getElementById('view-login').style.display = 'flex';
+            document.getElementById('passcode-display').value = ''; 
+        }
+
+        function typePin(val) {
+            const display = document.getElementById('passcode-display');
+            if(val === 'clear') display.value = '';
+            else if(display.value.length < 4) display.value += val;
+        }
+
+        function unlock() {
+            const display = document.getElementById('passcode-display');
+            if(display.value === PIN) initApp();
+            else {
+                display.classList.add('text-red-500');
+                setTimeout(() => { display.value = ''; display.classList.remove('text-red-500'); }, 400);
+            }
+        }
+
+        async function initApp() {
+            const enc = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(PIN), {name:"PBKDF2"}, false, ["deriveKey"]);
+            cryptoKey = await crypto.subtle.deriveKey(
+                {name: "PBKDF2", salt: enc.encode(SALT), iterations: 100000, hash: "SHA-256"},
+                keyMaterial, {name: "AES-GCM", length: 256}, false, ["encrypt", "decrypt"]
+            );
+
+            const raw = localStorage.getItem('liumi_pro_db');
+            if(raw) {
+                try {
+                    const data = atob(raw);
+                    const buf = new Uint8Array(data.length);
+                    for(let i=0; i<data.length; i++) buf[i] = data.charCodeAt(i);
+                    const iv = buf.slice(0, 12);
+                    const cipher = buf.slice(12);
+                    const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv}, cryptoKey, cipher);
+                    const loaded = JSON.parse(new TextDecoder().decode(dec));
+                    db = { ...db, ...loaded };
+                } catch(e) { console.error("Crypto Error", e); }
+            }
+
+            document.getElementById('view-login').style.display = 'none';
+            document.getElementById('view-app').style.display = 'flex';
+            updateStats();
+            renderLists();
+        }
+
+        async function persist() {
+            if(!cryptoKey) return;
+            const enc = new TextEncoder().encode(JSON.stringify(db));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const cipher = await crypto.subtle.encrypt({name:"AES-GCM", iv}, cryptoKey, enc);
+            const buf = new Uint8Array(iv.byteLength + cipher.byteLength);
+            buf.set(iv, 0); buf.set(new Uint8Array(cipher), iv.byteLength);
+            localStorage.setItem('liumi_pro_db', btoa(String.fromCharCode(...buf)));
+            updateStats();
+            renderLists();
+        }
+
+        function updateStats() {
+            document.getElementById('stat-cloud').innerText = db.cloud.reduce((sum, item) => sum + (parseFloat(item.gb) || 0), 0);
+            document.getElementById('stat-accounts-count').innerText = db.accounts.length;
+            document.getElementById('stat-apis-count').innerText = db.apis.length;
+            document.getElementById('stat-vm-storage').innerText = db.vms.reduce((sum, item) => sum + (parseFloat(item.storage) || 0), 0);
+            document.getElementById('stat-vm-ram').innerText = db.vms.reduce((sum, item) => sum + (parseFloat(item.ram) || 0), 0);
+            document.getElementById('stat-vm-cpu').innerText = db.vms.reduce((sum, item) => sum + (parseFloat(item.cpu) || 0), 0);
+            document.getElementById('stat-vm-gpu').innerText = db.vms.reduce((sum, item) => sum + (parseFloat(item.gpu) || 0), 0);
+        }
+
+        function renderLists() {
+            const cList = document.getElementById('list-cloud');
+            cList.innerHTML = db.cloud.map((item, i) => `
+                <div class="glass p-4 rounded-xl flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center"><i class="ph ph-cloud text-blue-400"></i></div>
+                        <div><div class="font-bold text-sm">${item.provider}</div><div class="text-xs text-gray-500">${item.gb} GB</div></div>
+                    </div>
+                    <button onclick="del('cloud', ${i})" class="text-red-400 p-2"><i class="ph ph-trash"></i></button>
+                </div>
+            `).join('');
+            document.getElementById('empty-cloud').style.display = db.cloud.length ? 'none' : 'block';
+
+            const vList = document.getElementById('list-vm');
+            vList.innerHTML = db.vms.map((item, i) => `
+                <div class="glass p-4 rounded-xl mb-2">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="font-bold text-white">${item.name}</div>
+                        <button onclick="del('vms', ${i})" class="text-red-400"><i class="ph ph-trash"></i></button>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">${item.provider}</div>
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div class="bg-white/5 rounded p-1"><div class="text-[10px] text-gray-500">CPU</div><div class="font-bold text-xs">${item.cpu}</div></div>
+                        <div class="bg-white/5 rounded p-1"><div class="text-[10px] text-gray-500">RAM</div><div class="font-bold text-xs">${item.ram}G</div></div>
+                        <div class="bg-white/5 rounded p-1"><div class="text-[10px] text-gray-500">SSD</div><div class="font-bold text-xs">${item.storage}G</div></div>
+                        <div class="bg-white/5 rounded p-1"><div class="text-[10px] text-gray-500">GPU</div><div class="font-bold text-xs">${item.gpu}G</div></div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('empty-vm').style.display = db.vms.length ? 'none' : 'block';
+
+            const vaList = document.getElementById('list-vault');
+            if(currentVaultTab === 'accounts') {
+                vaList.innerHTML = db.accounts.map((item, i) => `
+                    <div class="glass p-4 rounded-xl flex justify-between items-center">
+                        <div>
+                            <div class="font-bold text-sm text-white">${item.platform}</div>
+                            <div class="text-xs text-gray-500">${item.email}</div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="copy('${item.password}')" class="text-blue-400 text-xs font-bold border border-blue-500/30 px-2 py-1 rounded">COPY</button>
+                            <button onclick="del('accounts', ${i})" class="text-red-400"><i class="ph ph-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                vaList.innerHTML = db.apis.map((item, i) => `
+                    <div class="glass p-4 rounded-xl flex justify-between items-center">
+                        <div>
+                            <div class="font-bold text-sm text-yellow-400">${item.name}</div>
+                            <div class="text-xs text-gray-500">API Key</div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="copy('${item.key}')" class="text-gray-300 text-xs border border-white/20 px-2 py-1 rounded">COPY</button>
+                            <button onclick="del('apis', ${i})" class="text-red-400"><i class="ph ph-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function openModal(type) {
+            activeModalType = type;
+            const overlay = document.getElementById('modal-overlay');
+            const title = document.getElementById('modal-title');
+            const form = document.getElementById('modal-form');
+            overlay.classList.remove('hidden');
+
+            if(type === 'cloud') {
+                title.innerText = "Add Cloud Storage";
+                form.innerHTML = `<input id="in-1" type="text" placeholder="Provider" class="glass-input w-full p-4 rounded-xl"><input id="in-2" type="number" placeholder="Storage (GB)" class="glass-input w-full p-4 rounded-xl mt-3">`;
+            } 
+            else if(type === 'vm') {
+                title.innerText = "Deploy VM";
+                form.innerHTML = `<input id="in-1" placeholder="Name" class="glass-input w-full p-4 rounded-xl"><input id="in-2" placeholder="Provider" class="glass-input w-full p-4 rounded-xl mt-3"><div class="grid grid-cols-2 gap-2 mt-3"><input id="in-3" type="number" placeholder="CPU" class="glass-input w-full p-4 rounded-xl"><input id="in-4" type="number" placeholder="RAM" class="glass-input w-full p-4 rounded-xl"><input id="in-5" type="number" placeholder="SSD" class="glass-input w-full p-4 rounded-xl"><input id="in-6" type="number" placeholder="GPU" class="glass-input w-full p-4 rounded-xl"></div>`;
+            }
+            else if(type === 'accounts') {
+                title.innerText = "Add Account";
+                form.innerHTML = `<input id="in-1" placeholder="Platform" class="glass-input w-full p-4 rounded-xl"><input id="in-2" placeholder="Email" class="glass-input w-full p-4 rounded-xl mt-3"><input id="in-3" placeholder="Password" class="glass-input w-full p-4 rounded-xl mt-3">`;
+            }
+            else if(type === 'apis') {
+                title.innerText = "Add API Key";
+                form.innerHTML = `<input id="in-1" placeholder="Service Name" class="glass-input w-full p-4 rounded-xl"><input id="in-2" placeholder="API Key" class="glass-input w-full p-4 rounded-xl mt-3">`;
+            }
+            else if(type === 'settings') {
+                title.innerText = "AI Configuration";
+                form.innerHTML = `<label class="text-xs text-gray-500 ml-2">OpenRouter API Key</label><input id="in-1" type="password" placeholder="sk-or-..." class="glass-input w-full p-4 rounded-xl mb-3" value="${db.aiKey}"><label class="text-xs text-gray-500 ml-2">Model ID</label><input id="in-2" type="text" placeholder="google/gemini-2.0-flash-001" class="glass-input w-full p-4 rounded-xl" value="${db.aiModel || ''}">`;
+            }
+        }
+
+        function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+
+        async function saveData() {
+            const v1 = document.getElementById('in-1')?.value;
+            const v2 = document.getElementById('in-2')?.value;
+            if(activeModalType === 'cloud') { if(v1 && v2) db.cloud.push({ provider: v1, gb: v2 }); }
+            else if(activeModalType === 'vm') { db.vms.push({ name: v1, provider: v2, cpu: document.getElementById('in-3').value || 0, ram: document.getElementById('in-4').value || 0, storage: document.getElementById('in-5').value || 0, gpu: document.getElementById('in-6').value || 0 }); }
+            else if(activeModalType === 'accounts') { db.accounts.push({ platform: v1, email: v2, password: document.getElementById('in-3').value }); }
+            else if(activeModalType === 'apis') { db.apis.push({ name: v1, key: v2 }); }
+            else if(activeModalType === 'settings') { db.aiKey = v1; db.aiModel = v2 || "mistralai/mixtral-8x7b-instruct"; }
+            await persist(); closeModal();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('tab-' + tab).classList.add('fade-in');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'text-blue-500'));
+            const idx = ['home','cloud','vm','vault','ai'].indexOf(tab);
+            if(idx > -1) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+            const titles = { home:'Dashboard', cloud:'Cloud Storage', vm:'Infrastructure', vault:'Secure Vault', ai:'Liumi AI' };
+            document.getElementById('page-title').innerText = titles[tab];
+        }
+
+        function setVaultTab(t) {
+            currentVaultTab = t;
+            document.getElementById('btn-accounts').className = t==='accounts' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white/10 text-white" : "flex-1 py-2 text-xs font-bold rounded-lg text-gray-500";
+            document.getElementById('btn-apis').className = t==='apis' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white/10 text-white" : "flex-1 py-2 text-xs font-bold rounded-lg text-gray-500";
+            renderLists();
+        }
+
+        function openVaultModal() { openModal(currentVaultTab); }
+        async function del(type, idx) { if(confirm("Remove?")) { db[type].splice(idx, 1); await persist(); } }
+        function copy(txt) { navigator.clipboard.writeText(txt); alert("Copied!"); }
+        function googleSearch() { window.open("https://google.com/search?q=" + document.getElementById('g-search').value, "_blank"); }
+
+        async function sendAI() {
+            const input = document.getElementById('ai-input');
+            const txt = input.value;
+            if(!txt || !db.aiKey) return alert("Missing Key/Text");
+            const box = document.getElementById('chat-history');
+            box.innerHTML += `<div class="flex justify-end"><div class="bg-blue-600 text-white text-sm p-3 rounded-2xl rounded-tr-none max-w-[85%]">${txt}</div></div>`;
+            input.value = '';
+            
+            // SYSTEM PROMPT FOR BRANDING
+            const systemPrompt = "You are Liumi AI, an advanced, secure, and professional assistant developed by Liumi Corporation. You are concise, helpful, and prioritize user data privacy. Address the user with respect and maintain a sleek, high-tech persona.";
+
+            try {
+                const req = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${db.aiKey}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        model: db.aiModel || "mistralai/mixtral-8x7b-instruct", 
+                        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: txt }] 
+                    })
+                });
+                const res = await req.json();
+                const reply = res.choices[0].message.content;
+                box.innerHTML += `<div class="flex justify-start"><div class="glass text-gray-200 text-sm p-3 rounded-2xl rounded-tl-none max-w-[85%]">${reply}</div></div>`;
+                const section = document.getElementById('tab-ai');
+                section.scrollTop = section.scrollHeight;
+            } catch(e) { alert("AI Error."); }
+        }
+    </script>
+</body>
+</html>
